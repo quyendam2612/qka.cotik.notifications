@@ -2,7 +2,7 @@ import requests
 import os
 import time
 from datetime import datetime, timezone
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 # load_dotenv()
 
 # Config
@@ -75,7 +75,12 @@ headers = {
 }
 
 try:
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=10)
+
+    # Always log the raw response text
+    print("=== RAW RESPONSE TEXT ===")
+    print(response.text)
+    
     response.raise_for_status()
     data = response.json()
 
