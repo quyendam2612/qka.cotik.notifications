@@ -84,8 +84,8 @@ def send_text_message(text):
         print("[Telegram Text Error]", e)
 
 # Request
-# url = "https://cotik.app/api/order/list?page=1&sizeperpage=50&filter3=AWAITING_SHIPMENT"
-url = "https://cotik.app/api/order/list?page=1&sizeperpage=10&filter3=ON_HOLD"
+url = "https://cotik.app/api/order/list?page=1&sizeperpage=50&filter3=AWAITING_SHIPMENT"
+# url = "https://cotik.app/api/order/list?page=1&sizeperpage=10&filter3=ON_HOLD"
 headers = {
     "accept": "application/json, text/plain, */*",
     "accept-language": "en-US,en;q=0.9,vi;q=0.8",
