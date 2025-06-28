@@ -1,7 +1,7 @@
 import requests
 import os
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 # from dotenv import load_dotenv
 # load_dotenv()
 
@@ -10,25 +10,54 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 COTIK_AL_TOKEN = os.getenv("COTIK_AL_TOKEN")
 
+# Define GMT+7 timezone
+gmt_plus_7 = timezone(timedelta(hours=7))
+
+# Get current time in GMT+7
+now_vn = datetime.now(gmt_plus_7).strftime("%Y-%m-%d %H:%M:%S")
+
+NOTIFIED_FILE = "notified_orders.txt"
+
+def load_notified_ids():
+    if not os.path.exists(NOTIFIED_FILE):
+        return set()
+    with open(NOTIFIED_FILE, "r") as f:
+        return set(line.strip() for line in f.readlines())
+        
+def save_notified_ids(order_ids):
+    with open(NOTIFIED_FILE, "a") as f:
+        for oid in order_ids:
+            f.write(f"{oid}\n")
+
 def send_order_item_to_telegram(order):
-    shop_name = order.get("shops", {}).get("name", "N/A")
+    shop_code = order.get("shops", {}).get("code", "N/A")
     order_id = order.get("apiOrderId", "Unknown")
 
     for item in order.get("line_items", []):
         name = item.get("product_name", "Unnamed product")
-        quantity = 1  # Update if quantity field exists
+        sku_name = item.get("sku_name", "")
+        quantity = 1  # Adjust if quantity field exists
         image_url = item.get("sku_image")
 
+        # Limit product name to 40 characters
+        if len(name) > 40:
+            name = name[:37] + "..."
+
         caption = (
-            f"🛍️ Shop: {shop_name}\n"
-            f"📦 Order ID: {order_id}\n\n"
-            f"{quantity} × {name}"
+            f"🛍️ Shop: {shop_code}\n"
+            # f"📦 Order ID: {order_id}\n\n"
+            f"- {quantity} × {name}"
         )
+
+        if sku_name:
+            caption += f"\n  ({sku_name})"
 
         if image_url:
             send_photo_with_caption(image_url, caption)
         else:
             send_text_message(caption)
+        
+        time.sleep(10)  # delay between messages to avoid spam/rate limit
 
 
 def send_photo_with_caption(photo_url, caption):
@@ -55,7 +84,7 @@ def send_text_message(text):
         print("[Telegram Text Error]", e)
 
 # Request
-# url = "https://cotik.app/api/order/list?page=1&sizeperpage=10&filter3=AWAITING_COLLECTION"
+# url = "https://cotik.app/api/order/list?page=1&sizeperpage=50&filter3=AWAITING_SHIPMENT"
 url = "https://cotik.app/api/order/list?page=1&sizeperpage=10&filter3=ON_HOLD"
 headers = {
     "accept": "application/json, text/plain, */*",
@@ -78,8 +107,15 @@ try:
     response = requests.get(url, headers=headers, timeout=10)
 
     # Always log the raw response text
+    print(f"=== Script Run Time (GMT+7) ===")
+    print(now_vn)
     print("=== RAW RESPONSE TEXT ===")
     print(response.text)
+    with open("response.log", "w") as f:
+        f.write("=== Script Run Time (GMT+7) ===\n")
+        f.write(now_vn + "\n\n")
+        f.write("=== Raw Response Text ===\n")
+        f.write(response.text)
     
     response.raise_for_status()
     data = response.json()
@@ -89,18 +125,30 @@ try:
     # ten_minutes_ago = now - 100000  # 10 minutes ago
     ten_minutes_ago = now - 600  # 10 minutes ago
 
-    recent_orders = [
-        o for o in orders
-        if o.get("create_time", 0) >= ten_minutes_ago
-    ]
+    # no more ten minutes check
+    # recent_orders = [
+    #     o for o in orders
+    #     if o.get("create_time", 0) >= ten_minutes_ago
+    # ]
+    recent_orders = list(orders)
 
     if recent_orders:
         order_count = len(recent_orders)
         messages = []
 
+        notified_ids = load_notified_ids()
+        newly_notified = []
+
         for order in recent_orders:
+            order_id = order.get("apiOrderId")
+            if not order_id or order_id in notified_ids:
+                continue
+
             send_order_item_to_telegram(order)
-            time.sleep(10)  # delay between messages to avoid spam/rate limit
+            newly_notified.append(order_id)
+        
+        if newly_notified:
+            save_notified_ids(newly_notified)
 
 except Exception as e:
     print(f"[ERROR] {e}")
