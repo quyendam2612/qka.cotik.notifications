@@ -27,6 +27,10 @@ jobs:
         with:
           name: response-log
           path: response.log
+      - name: Debug whoami and token use
+        run: |
+          echo "Repo: ${{ github.repository }}"
+          echo "GH_PAT present: ${{ secrets.GH_PAT != '' }}"
       - name: Commit and push updated notified_orders.txt
         run: |
           git config user.name "github-actions"
