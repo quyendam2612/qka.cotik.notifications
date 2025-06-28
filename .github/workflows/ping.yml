@@ -31,7 +31,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: response-log
-          path: response.log
+          path: response.txt
+      - name: Show notified_orders.txt
+        run: |
+          echo "=== notified_orders.txt content ==="
+          cat notified_orders.txt || echo "File not found"
       - name: Save updated notified orders cache
         uses: actions/cache@v3
         with:
