@@ -31,6 +31,9 @@ jobs:
         run: |
           echo "Repo: ${{ github.repository }}"
           echo "GH_PAT present: ${{ secrets.GH_PAT != '' }}"
+      - name: Set remote with PAT
+        run: |
+          git remote set-url origin https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
       - name: Commit and push updated notified_orders.txt
         run: |
           git config user.name "github-actions"
@@ -38,4 +41,4 @@ jobs:
           git pull
           git add notified_orders.txt
           git commit -m "Update notified orders list [skip ci]" || echo "No changes to commit"
-          git push https://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@github.com/${{ github.repository }}.git
+          git push https://${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
