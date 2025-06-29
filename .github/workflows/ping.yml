@@ -20,7 +20,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: notified_orders.txt
-          key: notified-orders
+          key: notified-orders-${{ github.run_id }}
+          restore-keys: |
+            notified-orders-
       - name: Show notified_orders.txt
         run: |
           echo "=== notified_orders.txt content ==="
@@ -37,4 +39,4 @@ jobs:
           path: notified_orders.txt
           key: notified-orders-${{ github.run_id }}
           restore-keys: |
-            notified-orders
+            notified-orders-
