@@ -21,16 +21,16 @@ jobs:
         with:
           path: notified_orders.txt
           key: notified-orders
+      - name: Show notified_orders.txt
+        run: |
+          echo "=== notified_orders.txt content ==="
+          cat notified_orders.txt || echo "File not found"
       - name: Run order check
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           COTIK_AL_TOKEN: ${{ secrets.COTIK_AL_TOKEN }}
         run: python check-and-notify.py
-      - name: Show notified_orders.txt
-        run: |
-          echo "=== notified_orders.txt content ==="
-          cat notified_orders.txt || echo "File not found"
       - name: Save updated notified orders cache
         uses: actions/cache@v3
         with:
