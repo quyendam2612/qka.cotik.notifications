@@ -111,7 +111,7 @@ try:
     print(now_vn)
     print("=== RAW RESPONSE TEXT ===")
     print(response.text)
-    with open("response.log", "w") as f:
+    with open("response.txt", "w") as f:
         f.write("=== Script Run Time (GMT+7) ===\n")
         f.write(now_vn + "\n\n")
         f.write("=== Raw Response Text ===\n")
