@@ -132,7 +132,6 @@ try:
         messages = []
 
         notified_ids = load_notified_ids()
-        print(notified_ids)
         newly_notified = []
 
         for order in recent_orders:
