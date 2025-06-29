@@ -21,11 +21,11 @@ NOTIFIED_FILE = "notified_orders.txt"
 def load_notified_ids():
     if not os.path.exists(NOTIFIED_FILE):
         return set()
-    with open(NOTIFIED_FILE, "r") as f:
-        return set(line.strip() for line in f.readlines())
+    with open(NOTIFIED_FILE, "r", encoding="utf-8") as f:
+        return {line.strip() for line in f if line.strip()}
         
 def save_notified_ids(order_ids):
-    with open(NOTIFIED_FILE, "a") as f:
+    with open(NOTIFIED_FILE, "a", encoding="utf-8") as f:
         for oid in order_ids:
             f.write(f"{oid}\n")
 
@@ -132,6 +132,8 @@ try:
         messages = []
 
         notified_ids = load_notified_ids()
+        print("[DEBUG] Notified order IDs loaded:", notified_ids)
+
         newly_notified = []
 
         for order in recent_orders:
