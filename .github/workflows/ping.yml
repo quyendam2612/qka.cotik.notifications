@@ -21,6 +21,7 @@ jobs:
         with:
           name: notified-orders
           path: .
+          github_token: ${{ secrets.GH_PAT }}
           workflow_conclusion: success
           if_no_artifact_found: ignore
       - name: Show notified_orders.txt
