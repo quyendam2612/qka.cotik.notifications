@@ -30,7 +30,7 @@ def save_notified_ids(order_ids):
             f.write(f"{oid}\n")
 
 def send_order_item_to_telegram(order):
-    shop_code = order.get("shops", {}).get("code", "N/A")
+    shop_name = order.get("shops", {}).get("name", "N/A")
     order_id = order.get("apiOrderId", "Unknown")
 
     for item in order.get("line_items", []):
@@ -40,12 +40,12 @@ def send_order_item_to_telegram(order):
         image_url = item.get("sku_image")
 
         # Limit product name to 40 characters
-        if len(name) > 40:
+        if len(name) > 60:
             name = name[:37] + "..."
 
         caption = (
-            f"🛍️ Shop: {shop_code}\n"
-            # f"📦 Order ID: {order_id}\n\n"
+            # f"🛍️ Shop: {shop_code}\n"
+            f"💥 Order ID: {order_id} - {shop_name}\n\n"
             f"- {quantity} × {name}"
         )
 
