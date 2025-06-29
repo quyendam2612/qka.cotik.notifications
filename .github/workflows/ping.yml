@@ -16,13 +16,13 @@ jobs:
           python-version: '3.x'
       - name: Install dependencies
         run: pip install requests
-      - name: Restore notified orders cache
-        uses: actions/cache@v3
+      - name: Download previous artifact
+        uses: dawidd6/action-download-artifact@v2
         with:
-          path: notified_orders.txt
-          key: notified-orders-${{ github.run_id }}
-          restore-keys: |
-            notified-orders-
+          name: notified-orders
+          path: .
+          workflow_conclusion: success
+          if_no_artifact_found: ignore
       - name: Show notified_orders.txt
         run: |
           echo "=== notified_orders.txt content ==="
@@ -33,10 +33,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           COTIK_AL_TOKEN: ${{ secrets.COTIK_AL_TOKEN }}
         run: python check-and-notify.py
-      - name: Save updated notified orders cache
-        uses: actions/cache@v3
+      - name: Upload updated notified_orders.txt
+        uses: actions/upload-artifact@v4
         with:
+          name: notified-orders
           path: notified_orders.txt
-          key: notified-orders-${{ github.run_id }}
-          restore-keys: |
-            notified-orders-
