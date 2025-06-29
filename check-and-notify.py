@@ -111,11 +111,6 @@ try:
     print(now_vn)
     print("=== RAW RESPONSE TEXT ===")
     print(response.text)
-    with open("response.txt", "w") as f:
-        f.write("=== Script Run Time (GMT+7) ===\n")
-        f.write(now_vn + "\n\n")
-        f.write("=== Raw Response Text ===\n")
-        f.write(response.text)
     
     response.raise_for_status()
     data = response.json()
@@ -137,6 +132,7 @@ try:
         messages = []
 
         notified_ids = load_notified_ids()
+        print(notified_ids)
         newly_notified = []
 
         for order in recent_orders:

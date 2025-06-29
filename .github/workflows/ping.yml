@@ -27,11 +27,6 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           COTIK_AL_TOKEN: ${{ secrets.COTIK_AL_TOKEN }}
         run: python check-and-notify.py
-      - name: Upload response log
-        uses: actions/upload-artifact@v4
-        with:
-          name: response-log
-          path: response.txt
       - name: Show notified_orders.txt
         run: |
           echo "=== notified_orders.txt content ==="
