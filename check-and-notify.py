@@ -83,9 +83,13 @@ def send_text_message(text):
     except requests.exceptions.RequestException as e:
         print("[Telegram Text Error]", e)
 
+notified_ids = load_notified_ids()
+print("[DEBUG] Notified order IDs loaded:", notified_ids)
+newly_notified = []
+
 # Request
 url = "https://cotik.app/api/order/list?page=1&sizeperpage=50&filter3=AWAITING_SHIPMENT"
-# url = "https://cotik.app/api/order/list?page=1&sizeperpage=10&filter3=ON_HOLD"
+url2 = "https://cotik.app/api/order/list?page=1&sizeperpage=50&filter3=ON_HOLD"
 headers = {
     "accept": "application/json, text/plain, */*",
     "accept-language": "en-US,en;q=0.9,vi;q=0.8",
@@ -109,33 +113,16 @@ try:
     # Always log the raw response text
     print(f"=== Script Run Time (GMT+7) ===")
     print(now_vn)
-    print("=== RAW RESPONSE TEXT ===")
+    print("=== AWAITING_SHIPMENT RAW RESPONSE TEXT ===")
     print(response.text)
     
     response.raise_for_status()
     data = response.json()
 
     orders = data.get("data", {}).get("listorders", [])
-    now = int(time.time())  # current time in seconds
-    # ten_minutes_ago = now - 100000  # 10 minutes ago
-    ten_minutes_ago = now - 600  # 10 minutes ago
-
-    # no more ten minutes check
-    # recent_orders = [
-    #     o for o in orders
-    #     if o.get("create_time", 0) >= ten_minutes_ago
-    # ]
     recent_orders = list(orders)
 
     if recent_orders:
-        order_count = len(recent_orders)
-        messages = []
-
-        notified_ids = load_notified_ids()
-        print("[DEBUG] Notified order IDs loaded:", notified_ids)
-
-        newly_notified = []
-
         for order in recent_orders:
             order_id = order.get("apiOrderId")
             if not order_id or order_id in notified_ids:
@@ -143,9 +130,36 @@ try:
 
             send_order_item_to_telegram(order)
             newly_notified.append(order_id)
-        
-        if newly_notified:
-            save_notified_ids(newly_notified)
 
 except Exception as e:
     print(f"[ERROR] {e}")
+
+try:
+    response = requests.get(url2, headers=headers, timeout=10)
+
+    # Always log the raw response text
+    print(f"=== Script Run Time (GMT+7) ===")
+    print(now_vn)
+    print("=== ON_HOLD RAW RESPONSE TEXT ===")
+    print(response.text)
+
+    response.raise_for_status()
+    data = response.json()
+
+    orders = data.get("data", {}).get("listorders", [])
+    recent_orders = list(orders)
+
+    if recent_orders:
+        for order in recent_orders:
+            order_id = order.get("apiOrderId")
+            if not order_id or order_id in notified_ids:
+                continue
+
+            send_order_item_to_telegram(order)
+            newly_notified.append(order_id)
+
+except Exception as e:
+    print(f"[ERROR] {e}")
+
+if newly_notified:
+    save_notified_ids(newly_notified)
