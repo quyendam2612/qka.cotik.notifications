@@ -43,9 +43,17 @@ def send_order_item_to_telegram(order):
         if len(name) > 60:
             name = name[:37] + "..."
 
+        create_ts = order.get("create_time")
+        if create_ts:
+            create_dt = datetime.fromtimestamp(create_ts, tz=gmt_plus_7)
+            created_str = create_dt.strftime("🕒 Placed: %Y-%m-%d %H:%M:%S")
+        else:
+            created_str = "🕒 Placed: Unknown"
+        
         caption = (
             # f"🛍️ Shop: {shop_code}\n"
             f"💥 Order ID: {order_id} - {shop_name}\n\n"
+            f"{created_str}\n\n"
             f"- {quantity} × {name}"
         )
 
